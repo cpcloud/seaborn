@@ -751,21 +751,6 @@ class PairGrid(object):
 
         fig.tight_layout()
 
-        if self.square_grid:
-            diag_axes = []
-            for i, (var, ax) in enumerate(zip(x_vars, np.diag(axes))):
-                if i and diag_sharey:
-                    diag_ax = ax._make_twin_axes(sharex=ax,
-                                                 sharey=diag_axes[0],
-                                                 frameon=False)
-                else:
-                    diag_ax = ax._make_twin_axes(sharex=ax, frameon=False)
-                diag_ax.set_axis_off()
-                diag_axes.append(diag_ax)
-            self.diag_axes = np.array(diag_axes, np.object)
-        else:
-            self.diag_axes = None
-
     def map(self, func, **kwargs):
 
         for i, y_var in enumerate(self.y_vars):
@@ -779,6 +764,21 @@ class PairGrid(object):
                          label=label_k, color=self.palette[k], **kwargs)
 
     def map_diag(self, func, **kwargs):
+
+        if self.square_grid and self.diag_axes is None:
+            diag_axes = []
+            for i, (var, ax) in enumerate(zip(x_vars, np.diag(axes))):
+                if i and diag_sharey:
+                    diag_ax = ax._make_twin_axes(sharex=ax,
+                                                 sharey=diag_axes[0],
+                                                 frameon=False)
+                else:
+                    diag_ax = ax._make_twin_axes(sharex=ax, frameon=False)
+                diag_ax.set_axis_off()
+                diag_axes.append(diag_ax)
+            self.diag_axes = np.array(diag_axes, np.object)
+        else:
+            self.diag_axes = None
 
         for i, var in enumerate(self.x_vars):
 
@@ -794,7 +794,8 @@ class PairGrid(object):
             if func is plt.hist:
                 plt.sca(ax)
                 vals = [v.values for g, v in hue_grouped]
-                func(vals, color=self.palette, histtype="barstacked")
+                func(vals, color=self.palette, histtype="barstacked",
+                     **kwargs)
             else:
                 for k, (label_k, data_k) in enumerate(hue_grouped):
                     plt.sca(ax)
